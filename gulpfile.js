@@ -5,48 +5,50 @@ const   gulp        = require('gulp'                ),
         sourcemaps  = require('gulp-sourcemaps'     ),
         uglify      = require('gulp-uglify'         ),
         del         = require('del'                 ),
+        cssmin      = require('gulp-cssmin'         ),
         browserSync = require('browser-sync'        ).create();
 
 
 gulp.task('build_HTML', function (done) {
-    del(['./output/*.html']);
-    gulp.src('input/*.html')
+    del(['./dist/*.html']);
+    gulp.src('src/*.html')
         .pipe(fileinclude({
             prefix: '@@',
-            basepath: 'input/include/',
+            basepath: 'src/include/',
             indent: true // 保留文件的縮進
         }))
-        .pipe(gulp.dest('./output/'))
+        .pipe(gulp.dest('./dist/'))
         .pipe(browserSync.stream());
     done();
 });
 
 gulp.task('build_CSS', function (done) {
-    del(['./output/css/*']);
-    gulp.src('./input/less/*')
+    del(['./dist/css/*']);
+    gulp.src('./src/less/*')
         .pipe(less())
-        .pipe(gulp.dest('./output/css/'))
+        .pipe(cssmin())
+        .pipe(gulp.dest('./dist/css/'))
         .pipe(browserSync.stream());
     done();
 });
 
 gulp.task('build_JS', function(done){
-    del(['./output/js/*']);
-    gulp.src('./input/js/*')
+    del(['./dist/js/*']);
+    gulp.src('./src/js/*')
         .pipe(babel({
             minified: true,
             presets: ['@babel/env']
         }))
         .pipe(uglify())
-        .pipe(gulp.dest('./output/js/'))
+        .pipe(gulp.dest('./dist/js/'))
         .pipe(browserSync.stream());
     done();
 });
 
 gulp.task('build_IMG', function(done){
-    del(['./output/img/*']);
-    gulp.src('input/img/*')
-        .pipe(gulp.dest('./output/img/'))
+    del(['./dist/img/*']);
+    gulp.src('src/img/*')
+        .pipe(gulp.dest('./dist/img/'))
         .pipe(browserSync.stream());
     done();
 });
@@ -54,18 +56,18 @@ gulp.task('build_IMG', function(done){
 gulp.task('browser_sync', function() {
     browserSync.init({
         server: {
-            baseDir: "./output/"
+            baseDir: "./dist/"
         },
         port: 3000
     });
 });
 
 gulp.task('watch', function(){
-    gulp.watch('input/*.html',      gulp.series('build_HTML'));
-    gulp.watch('input/include/*',   gulp.series('build_HTML'));
-    gulp.watch('input/less/*',      gulp.series('build_CSS'));
-    gulp.watch('input/js/*',        gulp.series('build_JS'));
-    gulp.watch('input/img/*',       gulp.series('build_IMG'));
+    gulp.watch('src/*.html',      gulp.series('build_HTML'));
+    gulp.watch('src/include/*',   gulp.series('build_HTML'));
+    gulp.watch('src/less/*',      gulp.series('build_CSS'));
+    gulp.watch('src/js/*',        gulp.series('build_JS'));
+    gulp.watch('src/img/*',       gulp.series('build_IMG'));
 });
 
 gulp.task('default', gulp.parallel('build_HTML', 'build_CSS', 'build_JS', 'build_IMG', 'browser_sync', 'watch'));
